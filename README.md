@@ -38,14 +38,14 @@
 
 模型参数如下：
 
-	`EMB_SIZE = 128
-	`BACKBONE = 'resnet50'   # change to resnet50 if GPU enough
-	`BATCH = 32
-	`EPOCHS = 10
-	`LR = 1e-4
-	`WEIGHT_DECAY = 1e-5
-	`VAL_SPLIT = 0.1
-	`MARGIN = 1.0 
+	EMB_SIZE = 128
+	BACKBONE = 'resnet50'   
+	BATCH = 32
+	EPOCHS = 10
+	LR = 1e-4
+	WEIGHT_DECAY = 1e-5
+	VAL_SPLIT = 0.1
+	MARGIN = 1.0 
 
 用训练好的模型对所有图像生成 embedding
 
