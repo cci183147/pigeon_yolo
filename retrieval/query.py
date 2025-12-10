@@ -6,8 +6,8 @@ from siamese.model import SiameseNet
 from siamese.dataset import get_transforms
 import pandas as pd
 
-INDEX = "idx.faiss"
-EMB_META = "meta.csv"
+INDEX = "/home/cci/pigeon/retrieval/idx.faiss"
+EMB_META = "/home/cci/pigeon/retrieval/meta.csv"
 CHECKPOINT = "/home/cci/pigeon/siamese/checkpoints/best.pth"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
