@@ -53,3 +53,11 @@
 
 构建 FAISS 索引 — `retrieval/build_index.py`
 ### 使用效果
+系统会检索图片q，返回 top-k 匹配，包括 blood_id 和分数
+
+同时比较p1和p2，返回相似度分数（0~1）
+
+<img width="2148" height="238" alt="image" src="https://github.com/user-attachments/assets/3b447b99-c435-4853-b313-af319f5dd60c" />
+
+
+<img width="2586" height="221" alt="image" src="https://github.com/user-attachments/assets/6ab908e6-75d4-4da6-921c-1e709c4939ac" />
