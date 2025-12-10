@@ -1,0 +1,18 @@
+[project]
+name = "pigeon"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+dependencies = [
+    "ultralytics>=8.3.0",
+    "torch",
+    "torchvision",
+    "torchaudio",
+    "onnx>=1.20.0",
+]
+
+[tool.uv]
+prerelease = "allow"
+index-url = "https://pypi.org/simple"
+# CUDA 12.6 nightly wheel 地址
+extra-index-url = ["https://download.pytorch.org/whl/nightly/cu126"]
