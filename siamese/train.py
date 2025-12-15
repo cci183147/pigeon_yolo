@@ -20,8 +20,8 @@ os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 EMB_SIZE = 128
 BACKBONE = 'resnet50'   # change to resnet50 if GPU enough
 BATCH = 32
-EPOCHS = 10
-LR = 1e-4
+EPOCHS = 15
+LR = 1e-5
 WEIGHT_DECAY = 1e-5
 VAL_SPLIT = 0.1
 MARGIN = 1.0  # for contrastive loss
@@ -60,7 +60,7 @@ def main():
     train_loader = DataLoader(train_ds, batch_size=BATCH, shuffle=True, num_workers=4, collate_fn=collate_fn, pin_memory=True)
     val_loader = DataLoader(val_ds, batch_size=BATCH, shuffle=False, num_workers=4, collate_fn=collate_fn)
 
-    model = SiameseNet(emb_size=EMB_SIZE, backbone_name=BACKBONE, pretrained=True).to(DEVICE)
+    model = SiameseNet(emb_size=EMB_SIZE, pretrained=True).to(DEVICE)
     criterion = ContrastiveLoss(margin=MARGIN)
     optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)

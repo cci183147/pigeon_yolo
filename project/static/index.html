@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虹膜识别系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #f8f9fa;
+            color: #3498db;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .upload-area {
+            border: 3px dashed #bdc3c7;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .upload-area:hover {
+            border-color: #3498db;
+            background: #e8f4fc;
+        }
+
+        .upload-area.dragover {
+            border-color: #2ecc71;
+            background: #e8f6ef;
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #95a5a6;
+            font-size: 14px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .preview-container {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .preview-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .preview-img {
+            width: 100%;
+            height: 300px;
+            object-fit: contain;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            background: #f8f9fa;
+            padding: 10px;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-icon {
+            font-size: 20px;
+        }
+
+        .result-area {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+
+        .result-title {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .similarity-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .similarity-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .same-blood {
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .same-true {
+            color: #27ae60;
+            background: #e8f6ef;
+        }
+
+        .same-false {
+            color: #e74c3c;
+            background: #fde8e8;
+        }
+
+        .crop-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .k-input {
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100px;
+        }
+
+        .k-input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .search-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .result-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .result-info {
+            padding: 15px;
+        }
+
+        .result-similarity {
+            font-size: 20px;
+            font-weight: 600;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+
+        .result-path {
+            font-size: 14px;
+            color: #7f8c8d;
+            word-break: break-all;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fde8e8;
+            color: #e74c3c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 5px solid #e74c3c;
+        }
+
+        .success-message {
+            background: #e8f6ef;
+            color: #27ae60;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 5px solid #27ae60;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 14px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .image-preview {
+                flex-direction: column;
+            }
+
+            .search-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .k-input {
+                width: 100%;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-eye"></i> 虹膜识别系统</h1>
+            <p class="subtitle">基于深度学习与特征匹配的虹膜比对与搜索系统</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="compare">
+                <i class="fas fa-exchange-alt"></i> 虹膜比对
+            </button>
+            <button class="tab-btn" data-tab="search">
+                <i class="fas fa-search"></i> 虹膜搜索
+            </button>
+        </div>
+
+        <!-- 比对功能标签页 -->
+        <div id="compare" class="tab-content active">
+            <h2><i class="fas fa-exchange-alt"></i> 虹膜比对</h2>
+            <p>上传两张虹膜图片，系统将自动裁剪虹膜区域并计算相似度</p>
+
+            <div class="image-preview">
+                <div class="preview-container">
+                    <label class="preview-label">第一张虹膜图片</label>
+                    <div class="upload-area" id="dropArea1">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">点击或拖拽上传图片</div>
+                        <div class="upload-hint">支持 JPG, PNG 格式</div>
+                        <input type="file" class="file-input" id="fileInput1" accept="image/*">
+                    </div>
+                    <img class="preview-img" id="preview1" alt="第一张图片预览">
+                </div>
+
+                <div class="preview-container">
+                    <label class="preview-label">第二张虹膜图片</label>
+                    <div class="upload-area" id="dropArea2">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">点击或拖拽上传图片</div>
+                        <div class="upload-hint">支持 JPG, PNG 格式</div>
+                        <input type="file" class="file-input" id="fileInput2" accept="image/*">
+                    </div>
+                    <img class="preview-img" id="preview2" alt="第二张图片预览">
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn" id="compareBtn">
+                    <i class="fas fa-play-circle btn-icon"></i> 开始比对
+                </button>
+            </div>
+
+            <div class="loading" id="compareLoading">
+                <div class="spinner"></div>
+                <p>正在处理图片，计算相似度...</p>
+            </div>
+
+            <div class="result-area" id="compareResult" style="display: none;">
+                <div class="result-title">
+                    <i class="fas fa-chart-bar"></i> 比对结果
+                </div>
+                <div class="result-content">
+                    <div class="similarity-box">
+                        <div style="text-align: center;">相似度得分</div>
+                        <div class="similarity-value" id="similarityScore">0.00</div>
+                        <div class="same-blood" id="sameBlood">等待计算</div>
+                    </div>
+
+                    <div>
+                        <div class="crop-title">第一张虹膜裁剪结果</div>
+                        <img class="preview-img" id="cropResult1" alt="第一张裁剪结果">
+                    </div>
+
+                    <div>
+                        <div class="crop-title">第二张虹膜裁剪结果</div>
+                        <img class="preview-img" id="cropResult2" alt="第二张裁剪结果">
+                    </div>
+                </div>
+            </div>
+
+            <div id="compareError" class="error-message" style="display: none;"></div>
+        </div>
+
+        <!-- 搜索功能标签页 -->
+        <div id="search" class="tab-content">
+            <h2><i class="fas fa-search"></i> 虹膜搜索</h2>
+            <p>上传一张虹膜图片，系统将在数据库中搜索最相似的K张虹膜</p>
+
+            <div class="preview-container">
+                <label class="preview-label">待搜索的虹膜图片</label>
+                <div class="upload-area" id="dropAreaSearch">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">点击或拖拽上传图片</div>
+                    <div class="upload-hint">支持 JPG, PNG 格式</div>
+                    <input type="file" class="file-input" id="fileInputSearch" accept="image/*">
+                </div>
+                <img class="preview-img" id="previewSearch" alt="搜索图片预览">
+            </div>
+
+            <div class="search-controls">
+                <div>
+                    <label for="kValue" style="font-weight: 600; color: #2c3e50;">返回结果数量 (K):</label>
+                    <input type="number" id="kValue" class="k-input" min="1" max="20" value="5">
+                </div>
+                <button class="btn" id="searchBtn">
+                    <i class="fas fa-search btn-icon"></i> 开始搜索
+                </button>
+            </div>
+
+            <div class="loading" id="searchLoading">
+                <div class="spinner"></div>
+                <p>正在搜索数据库，请稍候...</p>
+            </div>
+
+            <div class="result-area" id="searchResult" style="display: none;">
+                <div class="result-title">
+                    <i class="fas fa-list-ol"></i> 搜索结果
+                </div>
+
+                <div>
+                    <div class="crop-title">查询图片的虹膜裁剪结果</div>
+                    <img class="preview-img" id="queryCrop" alt="查询裁剪结果" style="max-width: 400px;">
+                </div>
+
+                <h3 style="margin: 25px 0 15px; color: #2c3e50;">最相似的虹膜图片 (Top <span id="resultCount">0</span>)</h3>
+                <div class="search-results" id="resultsContainer">
+                    <!-- 搜索结果将在这里动态生成 -->
+                </div>
+            </div>
+
+            <div id="searchError" class="error-message" style="display: none;"></div>
+        </div>
+
+        <footer>
+            <p>虹膜识别系统 &copy; 2023 | 基于Flask + YOLO + Siamese网络 + FAISS</p>
+            <p>相似度阈值: 0.7 | 当前后端地址: <span id="backendUrl">http://localhost:8000</span></p>
+        </footer>
+    </div>
+
+    <script>
+        // 标签页切换功能
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+
+                // 更新活动标签按钮
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+
+                // 显示对应标签内容
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabId).classList.add('active');
+
+                // 清空所有结果和错误信息
+                clearAllResults();
+            });
+        });
+
+        // 图片上传和预览功能
+        function setupUploadArea(dropAreaId, fileInputId, previewImgId) {
+            const dropArea = document.getElementById(dropAreaId);
+            const fileInput = document.getElementById(fileInputId);
+            const previewImg = document.getElementById(previewImgId);
+
+            // 点击上传区域触发文件选择
+            dropArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            // 文件选择变化时更新预览
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files && fileInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        previewImg.src = e.target.result;
+                        previewImg.style.display = 'block';
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+
+                    // 清空相关结果
+                    clearRelatedResults(fileInputId);
+                }
+            });
+
+            // 拖拽功能
+            dropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropArea.classList.add('dragover');
+            });
+
+            dropArea.addEventListener('dragleave', () => {
+                dropArea.classList.remove('dragover');
+            });
+
+            dropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropArea.classList.remove('dragover');
+
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    const event = new Event('change', { bubbles: true });
+                    fileInput.dispatchEvent(event);
+                }
+            });
+        }
+
+        // 初始化上传区域
+        setupUploadArea('dropArea1', 'fileInput1', 'preview1');
+        setupUploadArea('dropArea2', 'fileInput2', 'preview2');
+        setupUploadArea('dropAreaSearch', 'fileInputSearch', 'previewSearch');
+
+        // 比对功能
+        document.getElementById('compareBtn').addEventListener('click', async () => {
+            const file1 = document.getElementById('fileInput1').files[0];
+            const file2 = document.getElementById('fileInput2').files[0];
+
+            if (!file1 || !file2) {
+                showError('compareError', '请上传两张图片进行比对');
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('compareLoading').style.display = 'block';
+            document.getElementById('compareResult').style.display = 'none';
+            document.getElementById('compareError').style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('img1', file1);
+            formData.append('img2', file2);
+
+            try {
+                const response = await fetch('/compare', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                // 隐藏加载状态
+                document.getElementById('compareLoading').style.display = 'none';
+
+                if (response.ok && !result.error) {
+                    // 显示比对结果
+                    document.getElementById('similarityScore').textContent = result.similarity.toFixed(4);
+
+                    const sameBloodElement = document.getElementById('sameBlood');
+                    sameBloodElement.textContent = result.same_blood ? '同一血亲' : '非同一血亲';
+                    sameBloodElement.className = result.same_blood ? 'same-blood same-true' : 'same-blood same-false';
+
+                    // 显示裁剪后的图片
+                    if (result.crop1) {
+                        document.getElementById('cropResult1').src = `/image?path=${encodeURIComponent(result.crop1)}`;
+                        document.getElementById('cropResult1').style.display = 'block';
+                    }
+
+                    if (result.crop2) {
+                        document.getElementById('cropResult2').src = `/image?path=${encodeURIComponent(result.crop2)}`;
+                        document.getElementById('cropResult2').style.display = 'block';
+                    }
+
+                    document.getElementById('compareResult').style.display = 'block';
+                } else {
+                    showError('compareError', result.error || '比对过程中发生错误');
+                }
+            } catch (error) {
+                document.getElementById('compareLoading').style.display = 'none';
+                showError('compareError', '网络错误：' + error.message);
+            }
+        });
+
+        // 搜索功能
+        document.getElementById('searchBtn').addEventListener('click', async () => {
+            const file = document.getElementById('fileInputSearch').files[0];
+            const kValue = document.getElementById('kValue').value;
+
+            if (!file) {
+                showError('searchError', '请上传一张图片进行搜索');
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('searchLoading').style.display = 'block';
+            document.getElementById('searchResult').style.display = 'none';
+            document.getElementById('searchError').style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('k', kValue);
+
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                // 隐藏加载状态
+                document.getElementById('searchLoading').style.display = 'none';
+
+                if (response.ok && !result.error) {
+                    // 显示查询裁剪结果
+                    if (result.query_crop) {
+                        document.getElementById('queryCrop').src = result.query_crop;
+                        document.getElementById('queryCrop').style.display = 'block';
+                    }
+
+                    // 显示搜索结果数量
+                    document.getElementById('resultCount').textContent = result.results.length;
+
+                    // 生成搜索结果卡片
+                    const resultsContainer = document.getElementById('resultsContainer');
+                    resultsContainer.innerHTML = '';
+
+                    result.results.forEach((item, index) => {
+                        const card = document.createElement('div');
+                        card.className = 'result-card';
+                        card.innerHTML = `
+                            <img class="result-img" src="${item.image}" alt="搜索结果 ${index + 1}">
+                            <div class="result-info">
+                                <div class="result-similarity">相似度: ${item.score ? item.score.toFixed(4) : 'N/A'}</div>
+                                <div class="result-blood">bloodID: ${item.blood_id ? item.blood_id : '未知'}</div>
+                                <div class="result-path">${item.path ? item.path.substring(item.path.lastIndexOf('/') + 1) : '未知路径'}</div>
+                            </div>
+                        `;
+                        resultsContainer.appendChild(card);
+                    });
+
+                    document.getElementById('searchResult').style.display = 'block';
+                } else {
+                    showError('searchError', result.error || '搜索过程中发生错误');
+                }
+            } catch (error) {
+                document.getElementById('searchLoading').style.display = 'none';
+                showError('searchError', '网络错误：' + error.message);
+            }
+        });
+
+        // 工具函数
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function clearAllResults() {
+            // 清空比对结果
+            document.getElementById('compareResult').style.display = 'none';
+            document.getElementById('similarityScore').textContent = '0.00';
+            document.getElementById('sameBlood').textContent = '等待计算';
+            document.getElementById('sameBlood').className = 'same-blood';
+            document.getElementById('cropResult1').style.display = 'none';
+            document.getElementById('cropResult2').style.display = 'none';
+            document.getElementById('compareError').style.display = 'none';
+
+            // 清空搜索结果
+            document.getElementById('searchResult').style.display = 'none';
+            document.getElementById('queryCrop').style.display = 'none';
+            document.getElementById('resultsContainer').innerHTML = '';
+            document.getElementById('searchError').style.display = 'none';
+
+            // 隐藏加载状态
+            document.getElementById('compareLoading').style.display = 'none';
+            document.getElementById('searchLoading').style.display = 'none';
+        }
+
+        function clearRelatedResults(fileInputId) {
+            if (fileInputId === 'fileInput1' || fileInputId === 'fileInput2') {
+                document.getElementById('compareResult').style.display = 'none';
+                document.getElementById('compareError').style.display = 'none';
+            } else if (fileInputId === 'fileInputSearch') {
+                document.getElementById('searchResult').style.display = 'none';
+                document.getElementById('searchError').style.display = 'none';
+            }
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查后端连接
+            fetch('/')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('后端连接正常');
+                    }
+                })
+                .catch(error => {
+                    console.warn('无法连接到后端服务器，请确保Flask应用正在运行');
+                    document.getElementById('backendUrl').textContent = '无法连接';
+                });
+        });
+    </script>
+</body>
+</html>
